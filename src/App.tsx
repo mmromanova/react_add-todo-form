@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import classNames from 'classnames';
 import { TodoProps } from './components/TodoInfo';
 import { UserProps } from './components/UserInfo';
-import { TodoInfo } from './components/TodoInfo';
 import { TodoList } from './components/TodoList';
 
 import usersFromServer from './api/users';
@@ -27,16 +26,22 @@ function validateUser(userId: number) {
 
 export const App = () => {
   const [title, setTitle] = useState('');
-  const [userId, setUserId] = useState('');
+  const [userId, setUserId] = useState<number>(0);
   const [errors, setErrors] = useState<{ title: string; user: string }>({
     title: '',
     user: '',
-  });;
+  });
+
   const [todos, setTodos] = useState<TodoProps[]>(() =>
     todosFromServer.map(todo => ({
       ...todo,
-      userObject: getUserById(todo.userId)!,
-    }))
+      userObject: getUserById(todo.userId) ?? {
+        id: 0,
+        name: 'Unknown',
+        username: '',
+        email: '',
+      },
+    })),
   );
 
   const nextId = Math.max(0, ...todos.map(todo => todo.id)) + 1;
@@ -50,7 +55,8 @@ export const App = () => {
   }
 
   function handleUserChange(event: React.ChangeEvent<HTMLSelectElement>) {
-    setUserId(event.target.value);
+    const selectedId = Number(event.target.value);
+    setUserId(selectedId);
 
     if (errors.user) {
       setErrors(prev => ({ ...prev, user: '' }));
@@ -80,8 +86,8 @@ export const App = () => {
     setTodos(prev => [...prev, newTodo]);
     setTitle('');
     setUserId('');
-    setErrors({title: '', user: ''});
-  };
+    setErrors({ title: '', user: '' });
+  }
 
   return (
     <div className="App">
@@ -89,7 +95,7 @@ export const App = () => {
 
       <form onSubmit={handleSubmit}>
         <div className="field">
-          <label>Title: </label>
+          <label htmlFor="title">Title: </label>
           <input
             type="text"
             data-cy="titleInput"
@@ -102,7 +108,7 @@ export const App = () => {
         </div>
 
         <div className="field">
-          <label>User: </label>
+          <label htmlFor="user">User: </label>
           <select
             value={userId}
             data-cy="userSelect"
