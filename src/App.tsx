@@ -45,6 +45,7 @@ export const App = () => {
   );
 
   const nextId = Math.max(0, ...todos.map(todo => todo.id)) + 1;
+  const numberUserId = Number(userId);
 
   function handleTitleChange(event: React.ChangeEvent<HTMLInputElement>) {
     setTitle(sanitizeTitle(event.target.value));
@@ -56,6 +57,7 @@ export const App = () => {
 
   function handleUserChange(event: React.ChangeEvent<HTMLSelectElement>) {
     const selectedId = Number(event.target.value);
+
     setUserId(selectedId);
 
     if (errors.user) {
@@ -67,7 +69,7 @@ export const App = () => {
     event.preventDefault();
 
     const titleError = validateTitle(title);
-    const userError = validateUser(Number(userId));
+    const userError = validateUser(numberUserId);
 
     if (titleError || userError) {
       setErrors({ title: titleError, user: userError });
@@ -78,14 +80,19 @@ export const App = () => {
     const newTodo: TodoProps = {
       id: nextId,
       title,
-      userId: Number(userId),
+      userId: numberUserId,
       completed: false,
-      userObject: getUserById(Number(userId))!,
+      userObject: getUserById(numberUserId) ?? {
+        id: 0,
+        name: 'Unknown',
+        username: '',
+        email: '',
+      },
     };
 
     setTodos(prev => [...prev, newTodo]);
     setTitle('');
-    setUserId('');
+    setUserId(0);
     setErrors({ title: '', user: '' });
   }
 
